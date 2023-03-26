@@ -1,4 +1,8 @@
 #ifndef PERIPHERAL_H
 #define PERIPHERAL_H
-// Code here.
+
+#include "cpu.h"
+
+void displayInit(void);
+void draw(Chip8 *sys);
 #endif
