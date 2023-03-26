@@ -4,7 +4,7 @@
 // For
 #include <stdint.h>
 
-typedef struct System {
+typedef struct Chip8 {
   /**
    * General purpose registers: 16 8-bit general purpose variable registers
    * numbered 0->F commonly called V0->VF.
