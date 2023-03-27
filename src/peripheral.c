@@ -9,6 +9,7 @@
  */
 #include "peripheral.h"
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_events.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_video.h>
 #include <stdio.h>
@@ -64,4 +65,17 @@ void draw(Chip8 *sys) {
       }
     }
   }
+}
+
+
+int handleEvents(){
+  SDL_Event event;
+
+  if (SDL_PollEvent(&event)){
+    if (event.type == SDL_QUIT)
+      return 1;
+  }
+
+  return 0;
+
 }
