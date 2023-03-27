@@ -4,5 +4,6 @@
 #include "cpu.h"
 
 void displayInit(void);
+void displayQuit(void);
 void draw(Chip8 *sys);
 #endif

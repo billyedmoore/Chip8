@@ -28,6 +28,15 @@ void displayInit(void) {
   renderer = SDL_CreateRenderer(screen, -1, SDL_RENDERER_ACCELERATED);
 }
 
+/*
+ * Quit SDL and destroy the screen and renderer.
+ */
+void displayQuit(void) {
+  SDL_DestroyWindow(screen);
+  SDL_DestroyRenderer(renderer);
+  SDL_Quit();
+}
+
 /**
  * Update the window to the current state of the system.
  * Parameters:

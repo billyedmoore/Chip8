@@ -32,10 +32,15 @@ int main(int argc, char **argv) {
     printf("Couldn't load rom.");
     exit(1);
   }
-
+  
+  // Initialise a display.
   displayInit();
+
   for (int i; i < 10; i++) {
     draw(sys);
   }
+  
+  // Free up memory.
   free(sys);
+  displayQuit();
 }
