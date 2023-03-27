@@ -72,6 +72,9 @@ int loadRom(char *filePath, Chip8 *sys) {
   if (fp == NULL) {
     return -1;
   }
+  
+  // Read the rom into memory starting at 0x200
+  fread(sys->Memory+0x200,1,4096-0x200,fp);
 
   return 1;
 }
