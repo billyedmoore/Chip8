@@ -63,6 +63,7 @@ typedef struct Chip8 {
 } Chip8;
 
 Chip8 *systemInit();
+void cycleSystem(Chip8 *sys);
 int loadRom(char* filePath, Chip8 *sys);
 
 #endif

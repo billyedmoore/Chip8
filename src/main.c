@@ -36,8 +36,13 @@ int main(int argc, char **argv) {
   // Initialise a display.
   displayInit();
 
-  for (int i; i < 10; i++) {
+  while(1) {
+    cycleSystem(sys);
     draw(sys);
+    printDisplay(sys);
+    if (handleEvents()){
+      break;
+    }
   }
   
   // Free up memory.

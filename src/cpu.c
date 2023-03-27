@@ -8,6 +8,7 @@
  */
 #include "cpu.h"
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h> // for malloc
 #include <string.h> // for memset
@@ -73,6 +74,94 @@ Chip8 *systemInit() {
 }
 
 /**
+ * Make one cycle of the fetch-decode-execute cycle.
+ */
+void cycleSystem(Chip8 *sys) {
+
+  // Fetch the operation from memory, 16 bit made up from two memory locations.
+  uint16_t opcode = (sys->Memory[sys->PC] << 8) | sys->Memory[sys->PC + 1];
+
+  // Increment the PC.
+  sys->PC += 2;
+
+  // Get the X from some instructions e.g 0x3XNN
+  uint16_t X = (opcode & 0x0F00) >> 8;
+  // Get the Y from some instructions e.g 0x5XY0
+  uint16_t Y = (opcode & 0x00F0) >> 4;
+
+  switch (opcode & 0xF000) {
+  case 0x0000:
+    switch (opcode) {
+    case 0x00E0:
+      // Clear the display.
+      memset(sys->Display, 0, sizeof(sys->Display));
+      break;
+    case 0X00EE:
+      // Subroutine?
+      break;
+    }
+    break;
+
+  // 0x1NNN: Jump to NNN.
+  case 0x1000:
+    sys->PC = (opcode & 0x0FFF);
+    break;
+
+  // 0x6XNN: Set register X.
+  case 0x6000:
+    sys->V[X] = (opcode & 0x00FF);
+    break;
+  // 0x7XNN: Add NN to register X.
+  case 0x7000: {
+    uint8_t NN = (opcode & 0x00FF);
+
+    if ((sys->V[X] + NN) > 0xFF) {
+      sys->V[X] = 0xFF;
+    } else {
+      sys->V[X] += NN;
+    }
+    break;
+  }
+  // 0xANNN: Set I register to NNN.
+  case 0xA000:
+    sys->I = (opcode & 0x0FFF);
+    break;
+
+  //0xDXYN: Draw to display.
+  case 0xD000:{
+      
+    int8_t Xcoord = sys->V[X];
+    int8_t Ycoord = sys->V[Y];
+    int8_t N = (opcode & 0x000F);
+  
+    // Set the flag to 0
+    sys->V[0xF] = 0;
+
+    for (int y=0; y < N; y++){
+      int8_t spriteBlock = sys->Memory[(sys->I)+y];
+      for (int x=7; x>=0; x--){
+        // Get single relevant pixel.
+        int8_t px = (spriteBlock>>x) & 1;
+        
+        // Get the index of the relevant pixel in Display.
+        int pxIndex = (Xcoord+x)+(Ycoord+y)*64;
+          
+          if (px & sys->Display[pxIndex]){
+            sys->V[0xF] = 1;
+        }
+          else if (px && !sys->Display[pxIndex]){
+            sys->Display[pxIndex] = 1;
+          }
+          // HANDLE EDGE CASES
+      }
+    }
+
+    break;
+  }
+  }
+}
+
+/**
  * Load a rom into memory.
  *
  * Parameters:
@@ -83,14 +172,14 @@ Chip8 *systemInit() {
  */
 int loadRom(char *filePath, Chip8 *sys) {
   FILE *fp = fopen(filePath, "rb");
-  
+
   // If failed to open.
   if (fp == NULL) {
     return -1;
   }
-  
+
   // Read the rom into memory starting at 0x200
-  fread(sys->Memory+0x200,1,4096-0x200,fp);
-  
+  fread(sys->Memory + 0x200, 1, 4096 - 0x200, fp);
+
   return 1;
 }

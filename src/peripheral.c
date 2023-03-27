@@ -49,9 +49,10 @@ void draw(Chip8 *sys) {
   SDL_RenderClear(renderer);
 
   // For pixel in system
-  for (int x; x < 64; x++) {
-    for (int y; y < 32; y++) {
+  for (int x = 0; x < 64; x++) {
+    for (int y = 0; y < 32; y++) {
 
+      // printf("(%i,%i) - %i\n",x,y,sys->Display[x + (y * 64)]);
       // if pixel is 1 draw rect
       if (sys->Display[x + (y * 64)]) {
         SDL_Rect rect;
@@ -67,15 +68,30 @@ void draw(Chip8 *sys) {
   }
 }
 
+/**
+ * Debug function to print the display out to stdout.
+ *
+ * Parameters:
+ *  Chip8* sys: the system state.
+ */
+void printDisplay(Chip8 *sys) {
+  for (int i = 0; i < (64 * 32); i++) {
+    if (i % 64 == 0) {
+      printf("%i\n", sys->Display[i]);
+    }
+    else {
+      printf("%i", sys->Display[i]);
+    }
+  }
+}
 
-int handleEvents(){
+int handleEvents() {
   SDL_Event event;
 
-  if (SDL_PollEvent(&event)){
+  if (SDL_PollEvent(&event)) {
     if (event.type == SDL_QUIT)
       return 1;
   }
 
   return 0;
-
 }
