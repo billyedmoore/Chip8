@@ -29,6 +29,12 @@ uint8_t font[] = {0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
                   0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
                   0xF0, 0x80, 0xF0, 0x80, 0x80};
 
+/**
+ * Create a new system and initialise it.
+ *
+ * Returns:
+ *  Chip* A pointer to the initialised system.
+ */
 Chip8 *systemInit() {
   Chip8 *sys = malloc(sizeof(Chip8));
 
@@ -66,15 +72,25 @@ Chip8 *systemInit() {
   return sys;
 }
 
+/**
+ * Load a rom into memory.
+ *
+ * Parameters:
+ *  char* filePath: The path of the rom.
+ *  Chip8* sys: The system whoes memory to use.
+ * Returns:
+ *  int: A status code, 1 for succesfully loaded -1 for not.
+ */
 int loadRom(char *filePath, Chip8 *sys) {
   FILE *fp = fopen(filePath, "rb");
-
+  
+  // If failed to open.
   if (fp == NULL) {
     return -1;
   }
   
   // Read the rom into memory starting at 0x200
   fread(sys->Memory+0x200,1,4096-0x200,fp);
-
+  
   return 1;
 }
