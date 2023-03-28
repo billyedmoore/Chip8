@@ -1,6 +1,9 @@
 # CHIP8
 *.ch8
 
+# Projecy specific
+temp.txt
+
 # Prerequisites
 *.d
 
