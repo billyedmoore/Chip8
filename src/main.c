@@ -39,7 +39,6 @@ int main(int argc, char **argv) {
   while(1) {
     cycleSystem(sys);
     draw(sys);
-    printDisplay(sys);
     if (handleEvents()){
       break;
     }

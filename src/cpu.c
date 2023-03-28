@@ -127,35 +127,49 @@ void cycleSystem(Chip8 *sys) {
     sys->I = (opcode & 0x0FFF);
     break;
 
-  //0xDXYN: Draw to display.
-  case 0xD000:{
-      
-    int8_t Xcoord = sys->V[X];
-    int8_t Ycoord = sys->V[Y];
+  // 0xDXYN: Draw to display.
+  case 0xD000: {
+
+    int8_t x = sys->V[X] & 63;
+    int8_t y = sys->V[Y] & 31;
     int8_t N = (opcode & 0x000F);
-  
-    // Set the flag to 0
+
     sys->V[0xF] = 0;
 
-    for (int y=0; y < N; y++){
-      int8_t spriteBlock = sys->Memory[(sys->I)+y];
-      for (int x=7; x>=0; x--){
-        // Get single relevant pixel.
-        int8_t px = (spriteBlock>>x) & 1;
-        
-        // Get the index of the relevant pixel in Display.
-        int pxIndex = (Xcoord+x)+(Ycoord+y)*64;
-          
-          if (px & sys->Display[pxIndex]){
-            sys->V[0xF] = 1;
-        }
-          else if (px && !sys->Display[pxIndex]){
-            sys->Display[pxIndex] = 1;
-          }
-          // HANDLE EDGE CASES
-      }
-    }
+    // For y in height
+    for (int yCount = 0; yCount < N; yCount++) {
+      int8_t spriteBlock = sys->Memory[(sys->I) + yCount];
 
+      // From most to least significant bit.
+      for (int xCount = 7; xCount >= 0; xCount--) {
+        // Get the relevant bit.
+        int8_t px = (spriteBlock >> xCount) & 1;
+        // Get the index of the relevant pixel
+        int pxIndex = x + (y * 64);
+
+        // If 1 in sprite and on display then set VF.
+        if (px & sys->Display[pxIndex]) {
+          sys->V[0xF] = 1;
+        }
+        // If 1 in sprite and not on display then set display px to 1.
+        else if (px & !sys->Display[pxIndex]) {
+          sys->Display[pxIndex] = 1;
+        }
+
+        // If reach right edge of screen stop.
+        if (x == 63) {
+          break;
+        }
+        x++;
+      }
+      // If reach bottom of the screen.
+      if (y == 31) {
+        break;
+      }
+      // Reset the x to the start of the row.
+      x -= 8;
+      y++;
+    }
     break;
   }
   }
