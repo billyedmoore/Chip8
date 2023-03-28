@@ -60,10 +60,13 @@ typedef struct Chip8 {
    */
   uint8_t SoundTimer;
 
+  int Quit;
+  int FileNotFound;
+
 } Chip8;
 
 Chip8 *systemInit();
 void cycleSystem(Chip8 *sys);
-int loadRom(char* filePath, Chip8 *sys);
+void loadRom(char* filePath, Chip8 *sys);
 
 #endif

@@ -87,13 +87,11 @@ void printDisplay(Chip8 *sys) {
   putchar('\n');
 }
 
-int handleEvents() {
+void handleEvents(Chip8 *sys) {
   SDL_Event event;
 
   if (SDL_PollEvent(&event)) {
     if (event.type == SDL_QUIT)
-      return 1;
+      sys->Quit = 1;
   }
-
-  return 0;
 }

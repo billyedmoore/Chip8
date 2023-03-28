@@ -70,6 +70,9 @@ Chip8 *systemInit() {
   sys->DelayTimer = 0;
   sys->SoundTimer = 0;
 
+  sys->Quit = 0;
+  sys->FileNotFound = 0;
+
   return sys;
 }
 
@@ -184,16 +187,14 @@ void cycleSystem(Chip8 *sys) {
  * Returns:
  *  int: A status code, 1 for succesfully loaded -1 for not.
  */
-int loadRom(char *filePath, Chip8 *sys) {
+void loadRom(char *filePath, Chip8 *sys) {
   FILE *fp = fopen(filePath, "rb");
 
   // If failed to open.
   if (fp == NULL) {
-    return -1;
+    sys->FileNotFound = 1;
   }
 
   // Read the rom into memory starting at 0x200
   fread(sys->Memory + 0x200, 1, 4096 - 0x200, fp);
-
-  return 1;
 }

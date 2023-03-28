@@ -25,10 +25,10 @@ int main(int argc, char **argv) {
   // Initialise system.
   Chip8 *sys = systemInit();
   // Load rom.
-  int loaded = loadRom(argv[1], sys);
+  loadRom(argv[1], sys);
 
   // If rom not loaded.
-  if (!loaded) {
+  if (sys->FileNotFound) {
     printf("Couldn't load rom.");
     exit(1);
   }
@@ -39,7 +39,10 @@ int main(int argc, char **argv) {
   while(1) {
     cycleSystem(sys);
     draw(sys);
-    if (handleEvents()){
+    handleEvents(sys);
+
+    if (sys->Quit){
+      printf("Quiting\n");
       break;
     }
   }
