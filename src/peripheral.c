@@ -25,7 +25,7 @@ void displayInit(void) {
   SDL_Init(SDL_INIT_VIDEO);
 
   screen = SDL_CreateWindow("Chip8", SDL_WINDOWPOS_CENTERED,
-                            SDL_WINDOWPOS_CENTERED, 64 * 8, 32 * 8, 0);
+                            SDL_WINDOWPOS_CENTERED, 64 * 16, 32 * 16, 0);
   renderer = SDL_CreateRenderer(screen, -1, SDL_RENDERER_ACCELERATED);
 }
 
@@ -57,14 +57,13 @@ void draw(Chip8 *sys) {
       if (sys->Display[x + (y * 64)]) {
         SDL_Rect rect;
 
-        rect.x = x * 8;
-        rect.y = y * 8;
-        rect.w = 8;
-        rect.h = 8;
+        rect.x = x * 16;
+        rect.y = y * 16;
+        rect.w = 16;
+        rect.h = 16;
 
         SDL_RenderFillRect(renderer, &rect);
-        SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
-      }
+        SDL_SetRenderDrawColor(renderer, 250, 250, 250, 255); }
     }
   }
   SDL_RenderPresent(renderer);
