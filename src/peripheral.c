@@ -63,9 +63,11 @@ void draw(Chip8 *sys) {
         rect.h = 8;
 
         SDL_RenderFillRect(renderer, &rect);
+        SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
       }
     }
   }
+  SDL_RenderPresent(renderer);
 }
 
 /**
@@ -83,6 +85,7 @@ void printDisplay(Chip8 *sys) {
       printf("%i", sys->Display[i]);
     }
   }
+  putchar('\n');
 }
 
 int handleEvents() {
