@@ -32,21 +32,21 @@ int main(int argc, char **argv) {
     printf("Couldn't load rom.");
     exit(1);
   }
-  
+
   // Initialise a display.
   displayInit();
 
-  while(1) {
+  while (1) {
     cycleSystem(sys);
     draw(sys);
     handleEvents(sys);
 
-    if (sys->Quit){
+    if (sys->Quit) {
       printf("Quiting\n");
       break;
     }
   }
-  
+
   // Free up memory.
   free(sys);
   displayQuit();

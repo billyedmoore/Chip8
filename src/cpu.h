@@ -60,6 +60,15 @@ typedef struct Chip8 {
    */
   uint8_t SoundTimer;
 
+  /**
+   * Keyboard: A map of the state of keys, 0 representing not pressed and 1
+   *           representing pressed
+   *
+   * The order of keys (left to right top to bottom): 1,2,3,4,Q,W,E,R,A,S,D,F,
+   *                                                  Z,X,C,V
+   */
+  uint8_t Keyboard[16];
+
   int Quit;
   int FileNotFound;
 
@@ -67,6 +76,6 @@ typedef struct Chip8 {
 
 Chip8 *systemInit();
 void cycleSystem(Chip8 *sys);
-void loadRom(char* filePath, Chip8 *sys);
+void loadRom(char *filePath, Chip8 *sys);
 
 #endif
