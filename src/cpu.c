@@ -244,23 +244,22 @@ void cycleSystem(Chip8 *sys) {
 
       sys->V[X] = sys->V[Y] - sys->V[X];
       break;
-    }
-    break;
+    // 0x8XYE: Shift left 1. Set VF to 1 if the most significant bit is 1
+    //         otherwise set to 0.
+    // AMBIGUOUS - Alternately VX <- VY before shift.
+    case 0x000E:
+      // If the most significant bit is 1. Hence if VX & 10000000 != 0.
+      if (sys->V[X] & 0x80) {
+        sys->V[0xF] = 1;
+      }
+      // Else set VF = 0.
+      else {
+        sys->V[0xF] = 0;
+      }
 
-  // 0x8XYE: Shift left 1. Set VF to 1 if the most significant bit is 1
-  //         otherwise set to 0.
-  // AMBIGUOUS - Alternately VX <- VY before shift.
-  case 0x000E:
-    // If the most significant bit is 1. Hence if VX & 10000000 != 0.
-    if (sys->V[X] & 0x80) {
-      sys->V[0xF] = 1;
+      sys->V[X] = sys->V[X] << 1;
+      break;
     }
-    // Else set VF = 0.
-    else {
-      sys->V[0xF] = 0;
-    }
-
-    sys->V[X] = sys->V[X] << 1;
     break;
 
   // 0x9XY0: Skip if VX != VY.
