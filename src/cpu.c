@@ -198,3 +198,21 @@ void loadRom(char *filePath, Chip8 *sys) {
   // Read the rom into memory starting at 0x200
   fread(sys->Memory + 0x200, 1, 4096 - 0x200, fp);
 }
+
+
+/**
+ * Decrement delay and sound timers if they are > 0. Should runat a rate of 
+ * ~60hz.
+ *
+ * Parameters:
+ *  Chip8* sys: The system state.
+ */
+void decrementTimers(Chip8 *sys) {
+  if (sys->DelayTimer > 0){
+    sys->DelayTimer --;
+  }
+  if (sys->SoundTimer > 0){
+    sys->SoundTimer --;
+  }
+
+}

@@ -13,6 +13,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+// The ratio of cycle hrz to the hrz timers should be run at (60hz).
+#define TIMERS_RATIO 5
+
 int main(int argc, char **argv) {
 
   // If wrong number of args passed exit.
@@ -23,7 +26,7 @@ int main(int argc, char **argv) {
   }
 
   // Initialise system.
-  Chip8 *sys = systemInit();
+  Chip8* sys = systemInit();
   // Load rom.
   loadRom(argv[1], sys);
 
@@ -36,7 +39,10 @@ int main(int argc, char **argv) {
   // Initialise a display.
   displayInit();
 
+  // Used to determine the number of loops per decrement of timers.
+  int timers_count = 0;
   while (1) {
+
     cycleSystem(sys);
     draw(sys);
     handleEvents(sys);
@@ -45,6 +51,15 @@ int main(int argc, char **argv) {
       printf("Quiting\n");
       break;
     }
+
+    // Timers should be decremented every 60hz. This is achieved by storing an
+    // approximate ratio of the system clock speed and 60hz.
+    if (timers_count == TIMERS_RATIO) {
+      timers_count = 0;     // Reset the timers count.
+      decrementTimers(sys); // Decrement the timers.
+    }
+
+    timers_count++;
   }
 
   // Free up memory.

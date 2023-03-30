@@ -76,6 +76,7 @@ typedef struct Chip8 {
 
 Chip8 *systemInit();
 void cycleSystem(Chip8 *sys);
+void decrementTimers(Chip8 *sys);
 void loadRom(char *filePath, Chip8 *sys);
 
 #endif
