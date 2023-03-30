@@ -99,8 +99,15 @@ void cycleSystem(Chip8 *sys) {
       // Clear the display.
       memset(sys->Display, 0, sizeof(sys->Display));
       break;
-    case 0X00EE:
-      // Subroutine?
+    // 0x00EE: Return from subroutine.
+    case 0x00EE:
+      // Set the PC to the value from the top of the stack.
+      sys->PC = sys->Stack[sys->StackPointer];
+      // Clear the top of the stack.
+      sys->Stack[sys->StackPointer] = 0;
+      // Decrement StackPointer.
+      sys->StackPointer--;
+
       break;
     }
     break;
@@ -110,10 +117,50 @@ void cycleSystem(Chip8 *sys) {
     sys->PC = (opcode & 0x0FFF);
     break;
 
+  // 0x2NNN: Call subroutine.
+  case 0x2000:
+    // Push the current value of the PC to the stack.
+    sys->Stack[sys->StackPointer] = sys->PC;
+    sys->StackPointer++;
+    // If pointing to outside of stack throw error.
+    if (sys->StackPointer > 16) {
+      sys->Quit = 1;
+      printf("Stack Depth Exceeded.\n");
+    }
+    // Set the PC to NNN.
+    sys->PC = (opcode & 0x0FFF);
+    break;
+
+  // 0x3XNN: Skip if VX == NN.
+  case 0x3000:
+    if (sys->V[X] == (opcode & 0x00FF)) {
+      // Skip an instruction.
+      sys->PC += 2;
+    }
+    break;
+
+  // 0x4XNN: Skip if VX != NN.
+  case 0x4000:
+    if (sys->V[X] != (opcode & 0x00FF)) {
+      // Skip an instruction.
+      sys->PC += 2;
+    }
+    break;
+
+  // 0x5XY0: Skip if VX == VY.
+  case 0x5000:
+    // If VX == VY.
+    if (sys->V[X] == sys->V[Y]) {
+      // Skip an instruction.
+      sys->PC += 2;
+    }
+    break;
+
   // 0x6XNN: Set register X.
   case 0x6000:
     sys->V[X] = (opcode & 0x00FF);
     break;
+
   // 0x7XNN: Add NN to register X.
   case 0x7000: {
     uint8_t NN = (opcode & 0x00FF);
@@ -125,6 +172,15 @@ void cycleSystem(Chip8 *sys) {
     }
     break;
   }
+
+  // 0x9XY0: Skip if VX != VY.
+  case 0x9000:
+    if (sys->V[X] != sys->V[Y]) {
+      // Skip an instruction.
+      sys->PC += 2;
+    }
+    break;
+
   // 0xANNN: Set I register to NNN.
   case 0xA000:
     sys->I = (opcode & 0x0FFF);
@@ -199,20 +255,18 @@ void loadRom(char *filePath, Chip8 *sys) {
   fread(sys->Memory + 0x200, 1, 4096 - 0x200, fp);
 }
 
-
 /**
- * Decrement delay and sound timers if they are > 0. Should runat a rate of 
+ * Decrement delay and sound timers if they are > 0. Should runat a rate of
  * ~60hz.
  *
  * Parameters:
  *  Chip8* sys: The system state.
  */
 void decrementTimers(Chip8 *sys) {
-  if (sys->DelayTimer > 0){
-    sys->DelayTimer --;
+  if (sys->DelayTimer > 0) {
+    sys->DelayTimer--;
   }
-  if (sys->SoundTimer > 0){
-    sys->SoundTimer --;
+  if (sys->SoundTimer > 0) {
+    sys->SoundTimer--;
   }
-
 }
