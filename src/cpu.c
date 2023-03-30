@@ -173,6 +173,96 @@ void cycleSystem(Chip8 *sys) {
     break;
   }
 
+  case 0x8000:
+    switch (opcode & 0x000F) {
+    // 0x8XY0: Set VX to VY.
+    case 0x0000:
+      // Set VX to VY.
+      sys->V[X] = sys->V[Y];
+      break;
+
+    // 0x8XY1: Binary or between VX and VY -> VX.
+    case 0x0001:
+      sys->V[X] = sys->V[X] | sys->V[Y];
+      break;
+
+    // 0x8XY2: Binary and between VX and VY -> VX.
+    case 0x0002:
+      sys->V[X] = sys->V[X] & sys->V[Y];
+      break;
+
+    // 0x8XY3: Bitwise xor between VX and VY -> VX.
+    case 0x0003:
+      sys->V[X] = sys->V[X] ^ sys->V[Y];
+      break;
+
+    // 0x8XY4: Add VX to VY and store in VX.
+    case 0x0004:
+      sys->V[X] = sys->V[X] + sys->V[Y];
+      break;
+
+    // 0x8XY5: Subtract VY from VX and store in VX.
+    case 0x0005:
+      // if VX>VY then set VF=1
+      if (sys->V[X] > sys->V[Y]) {
+        sys->V[0xF] = 1;
+      }
+      // else then set VF=0
+      else {
+        sys->V[0xF] = 0;
+      }
+
+      sys->V[X] = sys->V[X] - sys->V[Y];
+      break;
+
+    // 0x8XY6: Shift right 1. Set VF to 1 if the least significant bit is 1
+    //         otherwise set to 0.
+    // AMBIGUOUS - Alternately VX <- VY before shift.
+    case 0x0006:
+      // If the least significant bit is 1.
+      if (sys->V[X] & 1) {
+        sys->V[0xF] = 1;
+      }
+      // Else set VF = 0.
+      else {
+        sys->V[0xF] = 0;
+      }
+
+      sys->V[X] = sys->V[X] >> 1;
+      break;
+
+    // 0x8XY7: Subtract VX from VY and store in VX.
+    case 0x0007:
+      // If VY>VX then set VF=1.
+      if (sys->V[Y] > sys->V[X]) {
+        sys->V[0xF] = 1;
+      }
+      // Else set VF=0.
+      else {
+        sys->V[0xF] = 0;
+      }
+
+      sys->V[X] = sys->V[Y] - sys->V[X];
+      break;
+    }
+    break;
+
+  // 0x8XYE: Shift left 1. Set VF to 1 if the most significant bit is 1
+  //         otherwise set to 0.
+  // AMBIGUOUS - Alternately VX <- VY before shift.
+  case 0x000E:
+    // If the most significant bit is 1. Hence if VX & 10000000 != 0.
+    if (sys->V[X] & 0x80) {
+      sys->V[0xF] = 1;
+    }
+    // Else set VF = 0.
+    else {
+      sys->V[0xF] = 0;
+    }
+
+    sys->V[X] = sys->V[X] << 1;
+    break;
+
   // 0x9XY0: Skip if VX != VY.
   case 0x9000:
     if (sys->V[X] != sys->V[Y]) {
