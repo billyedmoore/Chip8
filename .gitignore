@@ -1,5 +1,6 @@
 # CHIP8
 *.ch8
+roms/
 
 # Projecy specific
 temp.txt
