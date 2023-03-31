@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
     handleEvents(sys);
 
     if (sys->Quit) {
-      printf("Quiting\n");
+      printf("Quitting\n");
       break;
     }
 
