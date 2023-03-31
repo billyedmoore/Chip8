@@ -119,11 +119,12 @@ void cycleSystem(Chip8 *sys) {
 
   // 0x2NNN: Call subroutine.
   case 0x2000:
+    // Increment the stack pointer.
+    sys->StackPointer++;
     // Push the current value of the PC to the stack.
     sys->Stack[sys->StackPointer] = sys->PC;
-    sys->StackPointer++;
     // If pointing to outside of stack throw error.
-    if (sys->StackPointer > 64) {
+    if (sys->StackPointer >= 64) {
       sys->Quit = 1;
       printf("Stack Depth Exceeded.\n");
     }
