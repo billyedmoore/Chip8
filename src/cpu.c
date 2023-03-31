@@ -275,9 +275,22 @@ void cycleSystem(Chip8 *sys) {
     sys->I = (opcode & 0x0FFF);
     break;
 
+  // 0xBNNN: Set PC <- NNN + V0.
+  // AMBIGUOUS - Alternately PC <- XNN + VX.
+  case 0xB000:
+    sys->PC = sys->V[0] + (opcode & 0x0FFF);
+    break;
+
+  // 0xCXNN: Generate a random 8 bit number, r. VX <- r & NN.
+  case 0xC000: {
+    uint8_t r = rand() % 256; // Random num between 0 and 255
+    sys->V[X] = r & (opcode & 0x00FF);
+
+    break;
+  }
+
   // 0xDXYN: Draw to display.
   case 0xD000: {
-
     int8_t x = sys->V[X] & 63;
     int8_t y = sys->V[Y] & 31;
     int8_t N = (opcode & 0x000F);
@@ -320,6 +333,111 @@ void cycleSystem(Chip8 *sys) {
     }
     break;
   }
+  case 0xE000:
+    switch (opcode & 0xF0FF) {
+    // 0xEX9E: Skip if key VX is pressed.
+    case 0xE09E:
+      if (sys->Keyboard[sys->V[X]]) {
+        sys->PC += 2;
+      }
+      break;
+
+    // 0xEXA1: Skip if key VC is not pressed.
+    case 0xE0A1:
+      if (!sys->Keyboard[sys->V[X]]) {
+        sys->PC += 2;
+      }
+      break;
+    }
+    break;
+  case 0xF000:
+    switch (opcode & 0xF0FF) {
+    // 0xFX07:  Set VX = DelayTimer.
+    case 0xF007:
+      sys->V[X] = sys->DelayTimer;
+      break;
+
+    // 0xFX0A: Wait until a key is pressed the store the value of that
+    //         key in VX. Decrements the PC and runs again if no key is
+    //         pressed.
+    case 0xF00A: {
+      int key_pressed = 0;
+      // For key on keyboard.
+      for (int i = 0; i < 16; i++) {
+        // If key pressed.
+        if (sys->Keyboard[i]) {
+          // Set VX to key.
+          sys->V[X] = i;
+          key_pressed = 1;
+        }
+      }
+      // If not pressed decrement the PC to run again.
+      if (!key_pressed) {
+        sys->PC -= 2;
+      }
+      break;
+    }
+    // 0xFX15:  Set DelayTimer = VX.
+    case 0xF015:
+      sys->DelayTimer = sys->V[X];
+      break;
+
+    // 0xFX18: Set SoundTimer = VX.
+    case 0xF018:
+      sys->SoundTimer = sys->V[X];
+      break;
+
+    // 0xFX1E: Set I=VX+I.
+    case 0xF01E:
+      sys->I = sys->I + sys->V[X];
+      break;
+
+    // 0xFX29: Set I to the location of sprite in memory;
+    case 0xF029:
+      // Set I to the value of the font for the specified char.
+      sys->I = 0x050 + sys->V[X];
+      break;
+
+    // 0xFX33: Store VX as 3 digits in BDC at addresses I, I+1 and I+2.
+    case 0xF033: {
+      // Get the number from VX.
+      int8_t numb = sys->V[X];
+
+      // The first digit.
+      int8_t dig_one = numb % 10;
+      // The second digit.
+      int8_t dig_two = numb % 100 - dig_one;
+      // The third digit.
+      int8_t dig_three = numb - numb % 100;
+
+      // Store in memory.
+      sys->Memory[sys->I] = dig_one;
+      sys->Memory[sys->I + 1] = dig_two;
+      sys->Memory[sys->I + 2] = dig_three;
+      break;
+    }
+
+    // 0xFX55: Read V0->VX into memory starting at memory address I.
+    case 0xF055: {
+      int index = sys->I;
+      for (int i = 0; i < X; i++) {
+        sys->Memory[index] = sys->V[i];
+        i++;
+      }
+      break;
+    }
+
+    // 0xFX65: Read from memory starting at address I into V0->X.
+    case 0xF065: {
+      int index = sys->I;
+      for (int i = 0; i < X; i++) {
+        sys->V[i] = sys->Memory[index];
+        i++;
+      }
+      break;
+    }
+    }
+    break;
   }
 }
 

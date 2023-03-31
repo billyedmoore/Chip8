@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 // The ratio of cycle hrz to the hrz timers should be run at (60hz).
 #define TIMERS_RATIO 5
@@ -24,9 +25,11 @@ int main(int argc, char **argv) {
     printf("Usage: ./a.out path/to/game.ch8\n");
     exit(1);
   }
+  // Seed random.
+  srand(time(NULL));
 
   // Initialise system.
-  Chip8* sys = systemInit();
+  Chip8 *sys = systemInit();
   // Load rom.
   loadRom(argv[1], sys);
 
