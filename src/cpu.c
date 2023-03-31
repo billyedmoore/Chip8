@@ -123,7 +123,7 @@ void cycleSystem(Chip8 *sys) {
     sys->Stack[sys->StackPointer] = sys->PC;
     sys->StackPointer++;
     // If pointing to outside of stack throw error.
-    if (sys->StackPointer > 16) {
+    if (sys->StackPointer > 64) {
       sys->Quit = 1;
       printf("Stack Depth Exceeded.\n");
     }
@@ -164,12 +164,7 @@ void cycleSystem(Chip8 *sys) {
   // 0x7XNN: Add NN to register X.
   case 0x7000: {
     uint8_t NN = (opcode & 0x00FF);
-
-    if ((sys->V[X] + NN) > 0xFF) {
-      sys->V[X] = 0xFF;
-    } else {
-      sys->V[X] += NN;
-    }
+    sys->V[X] += NN;
     break;
   }
 

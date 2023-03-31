@@ -26,9 +26,9 @@ typedef struct Chip8 {
 
   /**
    * The stack: used to to call subroutines/functions and return from them. Has
-   * a max depth of 16.
+   * a max depth of 64.
    */
-  uint16_t Stack[16];
+  uint16_t Stack[64];
 
   /**
    * The stack pointer: a pseudo register, points to the top of the stack.
