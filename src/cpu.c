@@ -402,23 +402,23 @@ void cycleSystem(Chip8 *sys) {
       // The first digit.
       int8_t dig_one = numb % 10;
       // The second digit.
-      int8_t dig_two = numb % 100 - dig_one;
+      int8_t dig_two = (numb % 100 - dig_one) / 10;
       // The third digit.
-      int8_t dig_three = numb - numb % 100;
+      int8_t dig_three = (numb - numb % 100) / 100;
 
       // Store in memory.
-      sys->Memory[sys->I] = dig_one;
+      sys->Memory[sys->I] = dig_three;
       sys->Memory[sys->I + 1] = dig_two;
-      sys->Memory[sys->I + 2] = dig_three;
+      sys->Memory[sys->I + 2] = dig_one;
       break;
     }
 
     // 0xFX55: Read V0->VX into memory starting at memory address I.
     case 0xF055: {
       int index = sys->I;
-      for (int i = 0; i < X; i++) {
+      for (int i = 0; i <= X; i++) {
         sys->Memory[index] = sys->V[i];
-        i++;
+        index++;
       }
       break;
     }
@@ -426,9 +426,9 @@ void cycleSystem(Chip8 *sys) {
     // 0xFX65: Read from memory starting at address I into V0->X.
     case 0xF065: {
       int index = sys->I;
-      for (int i = 0; i < X; i++) {
+      for (int i = 0; i <= X; i++) {
         sys->V[i] = sys->Memory[index];
-        i++;
+        index++;
       }
       break;
     }
