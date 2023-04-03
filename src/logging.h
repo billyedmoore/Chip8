@@ -1,7 +1,7 @@
 #ifndef LOGGING_H
 #define LOGGING_H
 
-#define LOG_LEVEL INFO
+#define LOG_LEVEL DEBUG
 
 enum loggingLevels {
   NONE,

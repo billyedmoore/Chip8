@@ -23,7 +23,7 @@ char *getLogLevelName(int logLevel) {
  *  ... : The arguments the populate the format string.
  */
 void simpleLog(int logLevel, char *fmt, ...) {
-  if (logLevel < LOG_LEVEL) {
+  if (logLevel > LOG_LEVEL) {
     return;
   }
 
