@@ -85,7 +85,7 @@ void cycleSystem(Chip8 *sys) {
   uint16_t opcode = (sys->Memory[sys->PC] << 8) | sys->Memory[sys->PC + 1];
 
   // Increment the PC.
-  sys->PC += 2;
+  // sys->PC += 2;
 
   // Get the X from some instructions e.g 0x3XNN
   uint16_t X = (opcode & 0x0F00) >> 8;
@@ -98,6 +98,7 @@ void cycleSystem(Chip8 *sys) {
     case 0x00E0:
       // Clear the display.
       memset(sys->Display, 0, sizeof(sys->Display));
+      sys->PC += 2;
       break;
     // 0x00EE: Return from subroutine.
     case 0x00EE:
@@ -105,6 +106,7 @@ void cycleSystem(Chip8 *sys) {
       sys->PC = sys->Stack[sys->StackPointer];
       // Decrement StackPointer.
       sys->StackPointer--;
+      sys->PC += 2;
       break;
     default:
       printf("Unknown opcode: %x.\n", opcode);
@@ -130,6 +132,7 @@ void cycleSystem(Chip8 *sys) {
     }
     // Set the PC to NNN.
     sys->PC = (opcode & 0x0FFF);
+    // sys->PC += 2;
     break;
 
   // 0x3XNN: Skip if VX == NN.
@@ -138,6 +141,7 @@ void cycleSystem(Chip8 *sys) {
       // Skip an instruction.
       sys->PC += 2;
     }
+    sys->PC += 2;
     break;
 
   // 0x4XNN: Skip if VX != NN.
@@ -146,6 +150,7 @@ void cycleSystem(Chip8 *sys) {
       // Skip an instruction.
       sys->PC += 2;
     }
+    sys->PC += 2;
     break;
 
   // 0x5XY0: Skip if VX == VY.
@@ -155,17 +160,20 @@ void cycleSystem(Chip8 *sys) {
       // Skip an instruction.
       sys->PC += 2;
     }
+    sys->PC += 2;
     break;
 
   // 0x6XNN: Set register X.
   case 0x6000:
     sys->V[X] = (opcode & 0x00FF);
+    sys->PC += 2;
     break;
 
   // 0x7XNN: Add NN to register X.
   case 0x7000: {
     uint8_t NN = (opcode & 0x00FF);
     sys->V[X] += NN;
+    sys->PC += 2;
     break;
   }
 
@@ -175,26 +183,31 @@ void cycleSystem(Chip8 *sys) {
     case 0x0000:
       // Set VX to VY.
       sys->V[X] = sys->V[Y];
+      sys->PC += 2;
       break;
 
     // 0x8XY1: Binary or between VX and VY -> VX.
     case 0x0001:
       sys->V[X] = sys->V[X] | sys->V[Y];
+      sys->PC += 2;
       break;
 
     // 0x8XY2: Binary and between VX and VY -> VX.
     case 0x0002:
       sys->V[X] = sys->V[X] & sys->V[Y];
+      sys->PC += 2;
       break;
 
     // 0x8XY3: Bitwise xor between VX and VY -> VX.
     case 0x0003:
       sys->V[X] = sys->V[X] ^ sys->V[Y];
+      sys->PC += 2;
       break;
 
     // 0x8XY4: Add VX to VY and store in VX.
     case 0x0004:
       sys->V[X] = sys->V[X] + sys->V[Y];
+      sys->PC += 2;
       break;
 
     // 0x8XY5: Subtract VY from VX and store in VX.
@@ -209,6 +222,7 @@ void cycleSystem(Chip8 *sys) {
       }
 
       sys->V[X] = sys->V[X] - sys->V[Y];
+      sys->PC += 2;
       break;
 
     // 0x8XY6: Shift right 1. Set VF to 1 if the least significant bit is 1
@@ -225,6 +239,7 @@ void cycleSystem(Chip8 *sys) {
       }
 
       sys->V[X] = sys->V[X] >> 1;
+      sys->PC += 2;
       break;
 
     // 0x8XY7: Subtract VX from VY and store in VX.
@@ -239,6 +254,7 @@ void cycleSystem(Chip8 *sys) {
       }
 
       sys->V[X] = sys->V[Y] - sys->V[X];
+      sys->PC += 2;
       break;
     // 0x8XYE: Shift left 1. Set VF to 1 if the most significant bit is 1
     //         otherwise set to 0.
@@ -254,6 +270,7 @@ void cycleSystem(Chip8 *sys) {
       }
 
       sys->V[X] = sys->V[X] << 1;
+      sys->PC += 2;
       break;
 
     default:
@@ -268,23 +285,27 @@ void cycleSystem(Chip8 *sys) {
       // Skip an instruction.
       sys->PC += 2;
     }
+    sys->PC += 2;
     break;
 
   // 0xANNN: Set I register to NNN.
   case 0xA000:
     sys->I = (opcode & 0x0FFF);
+    sys->PC += 2;
     break;
 
   // 0xBNNN: Set PC <- NNN + V0.
   // AMBIGUOUS - Alternately PC <- XNN + VX.
   case 0xB000:
     sys->PC = sys->V[0] + (opcode & 0x0FFF);
+    // sys->PC += 2;
     break;
 
   // 0xCXNN: Generate a random 8 bit number, r. VX <- r & NN.
   case 0xC000: {
     uint8_t r = rand() % 256; // Random num between 0 and 255
     sys->V[X] = r & (opcode & 0x00FF);
+    sys->PC += 2;
 
     break;
   }
@@ -331,6 +352,7 @@ void cycleSystem(Chip8 *sys) {
       x -= 8;
       y++;
     }
+    sys->PC += 2;
     break;
   }
   case 0xE000:
@@ -340,6 +362,7 @@ void cycleSystem(Chip8 *sys) {
       if (sys->Keyboard[sys->V[X]]) {
         sys->PC += 2;
       }
+      sys->PC += 2;
       break;
 
     // 0xEXA1: Skip if key VC is not pressed.
@@ -347,6 +370,7 @@ void cycleSystem(Chip8 *sys) {
       if (!sys->Keyboard[sys->V[X]]) {
         sys->PC += 2;
       }
+      sys->PC += 2;
       break;
     default:
       printf("Unknown opcode: %x.\n", opcode);
@@ -358,6 +382,7 @@ void cycleSystem(Chip8 *sys) {
     // 0xFX07:  Set VX = DelayTimer.
     case 0x0007:
       sys->V[X] = sys->DelayTimer;
+      sys->PC += 2;
       break;
 
     // 0xFX0A: Wait until a key is pressed the store the value of that
@@ -374,31 +399,35 @@ void cycleSystem(Chip8 *sys) {
           key_pressed = 1;
         }
       }
-      // If not pressed decrement the PC to run again.
-      if (!key_pressed) {
-        sys->PC -= 2;
+      // Only increment the PC if key_pressed.
+      if (key_pressed) {
+        sys->PC += 2;
       }
       break;
     }
     // 0xFX15:  Set DelayTimer = VX.
     case 0x0015:
       sys->DelayTimer = sys->V[X];
+      sys->PC += 2;
       break;
 
     // 0xFX18: Set SoundTimer = VX.
     case 0x0018:
       sys->SoundTimer = sys->V[X];
+      sys->PC += 2;
       break;
 
     // 0xFX1E: Set I=VX+I.
     case 0x001E:
       sys->I = sys->I + sys->V[X];
+      sys->PC += 2;
       break;
 
     // 0xFX29: Set I to the location of sprite in memory;
     case 0x0029:
       // Set I to the value of the font for the specified char.
       sys->I = 0x050 + sys->V[X];
+      sys->PC += 2;
       break;
 
     // 0xFX33: Store VX as 3 digits in BDC at addresses I, I+1 and I+2.
@@ -409,6 +438,7 @@ void cycleSystem(Chip8 *sys) {
       sys->Memory[sys->I] = (numb % 1000) / 100;
       sys->Memory[sys->I + 1] = (numb % 100) / 10;
       sys->Memory[sys->I + 2] = (numb % 10);
+      sys->PC += 2;
       break;
     }
 
@@ -419,6 +449,7 @@ void cycleSystem(Chip8 *sys) {
         sys->Memory[index] = sys->V[i];
         index++;
       }
+      sys->PC += 2;
       break;
     }
 
@@ -429,6 +460,7 @@ void cycleSystem(Chip8 *sys) {
         sys->V[i] = sys->Memory[index];
         index++;
       }
+      sys->PC += 2;
       break;
     }
     default:
