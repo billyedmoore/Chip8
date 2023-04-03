@@ -230,14 +230,8 @@ void cycleSystem(Chip8 *sys) {
     // AMBIGUOUS - Alternately VX <- VY before shift.
     case 0x0006:
       // If the least significant bit is 1.
-      if (sys->V[X] & 1) {
-        sys->V[0xF] = 1;
-      }
-      // Else set VF = 0.
-      else {
-        sys->V[0xF] = 0;
-      }
-
+      sys->V[X] = sys->V[Y];
+      sys->V[0xF] = sys->V[X] & 1;
       sys->V[X] = sys->V[X] >> 1;
       sys->PC += 2;
       break;
