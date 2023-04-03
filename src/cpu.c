@@ -103,11 +103,11 @@ void cycleSystem(Chip8 *sys) {
     case 0x00EE:
       // Set the PC to the value from the top of the stack.
       sys->PC = sys->Stack[sys->StackPointer];
-      // Clear the top of the stack.
-      sys->Stack[sys->StackPointer] = 0;
       // Decrement StackPointer.
       sys->StackPointer--;
-
+      break;
+    default:
+      printf("Unknown opcode: %x.\n", opcode);
       break;
     }
     break;
@@ -255,6 +255,10 @@ void cycleSystem(Chip8 *sys) {
 
       sys->V[X] = sys->V[X] << 1;
       break;
+
+    default:
+      printf("Unknown opcode: %x.\n", opcode);
+      break;
     }
     break;
 
@@ -344,19 +348,22 @@ void cycleSystem(Chip8 *sys) {
         sys->PC += 2;
       }
       break;
+    default:
+      printf("Unknown opcode: %x.\n", opcode);
+      break;
     }
     break;
   case 0xF000:
-    switch (opcode & 0xF0FF) {
+    switch (opcode & 0x00FF) {
     // 0xFX07:  Set VX = DelayTimer.
-    case 0xF007:
+    case 0x0007:
       sys->V[X] = sys->DelayTimer;
       break;
 
     // 0xFX0A: Wait until a key is pressed the store the value of that
     //         key in VX. Decrements the PC and runs again if no key is
     //         pressed.
-    case 0xF00A: {
+    case 0x000A: {
       int key_pressed = 0;
       // For key on keyboard.
       for (int i = 0; i < 16; i++) {
@@ -374,47 +381,39 @@ void cycleSystem(Chip8 *sys) {
       break;
     }
     // 0xFX15:  Set DelayTimer = VX.
-    case 0xF015:
+    case 0x0015:
       sys->DelayTimer = sys->V[X];
       break;
 
     // 0xFX18: Set SoundTimer = VX.
-    case 0xF018:
+    case 0x0018:
       sys->SoundTimer = sys->V[X];
       break;
 
     // 0xFX1E: Set I=VX+I.
-    case 0xF01E:
+    case 0x001E:
       sys->I = sys->I + sys->V[X];
       break;
 
     // 0xFX29: Set I to the location of sprite in memory;
-    case 0xF029:
+    case 0x0029:
       // Set I to the value of the font for the specified char.
       sys->I = 0x050 + sys->V[X];
       break;
 
     // 0xFX33: Store VX as 3 digits in BDC at addresses I, I+1 and I+2.
-    case 0xF033: {
+    case 0x0033: {
       // Get the number from VX.
       int8_t numb = sys->V[X];
-
-      // The first digit.
-      int8_t dig_one = numb % 10;
-      // The second digit.
-      int8_t dig_two = (numb % 100 - dig_one) / 10;
-      // The third digit.
-      int8_t dig_three = (numb - numb % 100) / 100;
-
       // Store in memory.
-      sys->Memory[sys->I] = dig_three;
-      sys->Memory[sys->I + 1] = dig_two;
-      sys->Memory[sys->I + 2] = dig_one;
+      sys->Memory[sys->I] = (numb % 1000) / 100;
+      sys->Memory[sys->I + 1] = (numb % 100) / 10;
+      sys->Memory[sys->I + 2] = (numb % 10);
       break;
     }
 
     // 0xFX55: Read V0->VX into memory starting at memory address I.
-    case 0xF055: {
+    case 0x0055: {
       int index = sys->I;
       for (int i = 0; i <= X; i++) {
         sys->Memory[index] = sys->V[i];
@@ -424,7 +423,7 @@ void cycleSystem(Chip8 *sys) {
     }
 
     // 0xFX65: Read from memory starting at address I into V0->X.
-    case 0xF065: {
+    case 0x0065: {
       int index = sys->I;
       for (int i = 0; i <= X; i++) {
         sys->V[i] = sys->Memory[index];
@@ -432,7 +431,13 @@ void cycleSystem(Chip8 *sys) {
       }
       break;
     }
+    default:
+      printf("Unknown opcode: %x.\n", opcode);
+      break;
     }
+    break;
+  default:
+    printf("Unknown opcode: %x.\n", opcode);
     break;
   }
 }
