@@ -6,8 +6,8 @@ char *getLogLevelName(int logLevel) {
   switch (logLevel) {
   case INFO:
     return "INFO";
-  case DEBUG:
-    return "DEBUG";
+  case WARN:
+    return "WARN";
   default:
     return "INVALID LOGGING LEVEL";
   }
