@@ -7,6 +7,7 @@
  *  void cycle(system* sys) -> Cycle the system.
  */
 #include "cpu.h"
+#include "logging.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -73,6 +74,7 @@ Chip8 *systemInit() {
   sys->Quit = 0;
   sys->FileNotFound = 0;
 
+  simpleLog(WARN, "Created a new Chip8 instance.\n");
   return sys;
 }
 
@@ -99,6 +101,7 @@ void cycleSystem(Chip8 *sys) {
       // Clear the display.
       memset(sys->Display, 0, sizeof(sys->Display));
       sys->PC += 2;
+      simpleLog(INFO, "%#04X - Cleared the display.\n", opcode);
       break;
     // 0x00EE: Return from subroutine.
     case 0x00EE:
@@ -107,9 +110,11 @@ void cycleSystem(Chip8 *sys) {
       // Decrement StackPointer.
       sys->StackPointer--;
       sys->PC += 2;
+      simpleLog(INFO, "%#04X - Returned from subroutine.(PC=%#03X and SP=%i)\n",
+                opcode, sys->PC, sys->StackPointer);
       break;
     default:
-      printf("Unknown opcode: %x.\n", opcode);
+      simpleLog(WARN, "Unknown opcode: %x.\n", opcode);
       break;
     }
     break;
@@ -117,6 +122,8 @@ void cycleSystem(Chip8 *sys) {
   // 0x1NNN: Jump to NNN.
   case 0x1000:
     sys->PC = (opcode & 0x0FFF);
+    simpleLog(INFO, "%#04X - Jumped to NNN=%#03X PC=%#03X.\n", opcode,
+              (opcode & 0x0FFF), sys->PC);
     break;
 
   // 0x2NNN: Call subroutine.
@@ -128,11 +135,16 @@ void cycleSystem(Chip8 *sys) {
     // If pointing to outside of stack throw error.
     if (sys->StackPointer >= 64) {
       sys->Quit = 1;
-      printf("Stack Depth Exceeded.\n");
+      simpleLog(WARN, "Stack Depth Exceeded.\n");
     }
     // Set the PC to NNN.
     sys->PC = (opcode & 0x0FFF);
     // sys->PC += 2;
+    simpleLog(
+        INFO,
+        "%#04X - Called a subroutine added current PC to the stack. Jumped "
+        "to %#03X. SP is %i.\n",
+        opcode, sys->PC, sys->StackPointer);
     break;
 
   // 0x3XNN: Skip if VX == NN.
@@ -140,6 +152,11 @@ void cycleSystem(Chip8 *sys) {
     if (sys->V[X] == (opcode & 0x00FF)) {
       // Skip an instruction.
       sys->PC += 2;
+      simpleLog(INFO, "%#06X - Skipped as (VX=%#04X) == (NN=%#04X)\n", opcode,
+                sys->V[X], (opcode & 0x00FF));
+    } else {
+      simpleLog(INFO, "%#04X - Not Skipped as (VX=%#04X) != (NN=%#04X)\n",
+                opcode, sys->PC, (opcode & 0x00FF));
     }
     sys->PC += 2;
     break;
@@ -149,6 +166,11 @@ void cycleSystem(Chip8 *sys) {
     if (sys->V[X] != (opcode & 0x00FF)) {
       // Skip an instruction.
       sys->PC += 2;
+      simpleLog(INFO, "%#06X - Skipped as (VX=%#04X) != (NN=%#04X)\n", opcode,
+                sys->V[X], (opcode & 0x00FF));
+    } else {
+      simpleLog(INFO, "%#06X - Not skipped as (VX=%#04X) == (NN=%#04X)\n",
+                opcode, sys->V[X], (opcode & 0x00FF));
     }
     sys->PC += 2;
     break;
@@ -159,21 +181,29 @@ void cycleSystem(Chip8 *sys) {
     if (sys->V[X] == sys->V[Y]) {
       // Skip an instruction.
       sys->PC += 2;
+      simpleLog(INFO, "%#06X - Skipped as (VX=%#04X) == (VY=%#04X)\n", opcode,
+                sys->V[X], sys->V[Y]);
     }
     sys->PC += 2;
+    simpleLog(INFO, "%#06X - Not skipped as (VX=%#04X) != (VY=%#04X)\n", opcode,
+              sys->V[X], (opcode & 0x00FF));
     break;
 
   // 0x6XNN: Set register X.
   case 0x6000:
     sys->V[X] = (opcode & 0x00FF);
     sys->PC += 2;
+    simpleLog(INFO, "%#06X - Set V%X = %#04X\n", opcode, X, (opcode & 0x00FF));
     break;
 
   // 0x7XNN: Add NN to register X.
   case 0x7000: {
     uint8_t NN = (opcode & 0x00FF);
+    uint8_t VX = sys->V[X];
     sys->V[X] += NN;
     sys->PC += 2;
+    simpleLog(INFO, "%#06X - Set V%X(%#04X) = V%X(%#04i) + NN(%#04i) = %#04i\n",
+              opcode, X, X, VX, VX, NN, sys->V[X]);
     break;
   }
 
@@ -184,34 +214,60 @@ void cycleSystem(Chip8 *sys) {
       // Set VX to VY.
       sys->V[X] = sys->V[Y];
       sys->PC += 2;
+      simpleLog(INFO, "%#06X - Set V%X01=VY(%#04X)\n", opcode, X, sys->V[X]);
       break;
 
     // 0x8XY1: Binary or between VX and VY -> VX.
-    case 0x0001:
+    case 0x0001: {
+      int8_t VX = sys->V[X];
+      int8_t VY = sys->V[Y];
       sys->V[X] = sys->V[X] | sys->V[Y];
       sys->PC += 2;
+      simpleLog(INFO, "%#06X - Binary OR. VX = VX(%#04X) | VY(%#04X) = %#04X\n",
+                opcode, VX, VY, sys->V[X]);
       break;
+    }
 
     // 0x8XY2: Binary and between VX and VY -> VX.
-    case 0x0002:
+    case 0x0002: {
+      int8_t VX = sys->V[X];
+      int8_t VY = sys->V[Y];
       sys->V[X] = sys->V[X] & sys->V[Y];
       sys->PC += 2;
+      simpleLog(INFO,
+                "%#06X - Binary AND. VX = VX(%#04X) & VY(%#04X) = %#04X\n",
+                opcode, VX, VY, sys->V[X]);
       break;
+    }
 
     // 0x8XY3: Bitwise xor between VX and VY -> VX.
-    case 0x0003:
+    case 0x0003: {
+      int8_t VX = sys->V[X];
+      int8_t VY = sys->V[Y];
       sys->V[X] = sys->V[X] ^ sys->V[Y];
       sys->PC += 2;
+      simpleLog(INFO,
+                "%#06X - Binary XOR. VX = VX(%#04X) ^ VY(%#04X) = %#04X\n",
+                opcode, VX, VY, sys->V[X]);
       break;
+    }
 
     // 0x8XY4: Add VX to VY and store in VX.
-    case 0x0004:
+    case 0x0004: {
+      int8_t VX = sys->V[X];
+      int8_t VY = sys->V[Y];
       sys->V[X] = sys->V[X] + sys->V[Y];
       sys->PC += 2;
+      simpleLog(INFO,
+                "%#06X - Add VX and VY. VX = VX(%#04X) + VY(%#04X) = %#04X\n",
+                opcode, VX, VY, sys->V[X]);
       break;
+    }
 
     // 0x8XY5: Subtract VY from VX and store in VX.
-    case 0x0005:
+    case 0x0005: {
+      int8_t VX = sys->V[X];
+      int8_t VY = sys->V[Y];
       // if VX>VY then set VF=1
       if (sys->V[X] > sys->V[Y]) {
         sys->V[0xF] = 1;
@@ -223,21 +279,34 @@ void cycleSystem(Chip8 *sys) {
 
       sys->V[X] = sys->V[X] - sys->V[Y];
       sys->PC += 2;
+      simpleLog(INFO,
+                "%#06X - Subtract VY from VX. VX = VX(%#04X) - VY(%#04X) = "
+                "%#04X. VF = %i\n",
+                opcode, VX, VY, sys->V[X], sys->V[0xF]);
       break;
+    }
 
     // 0x8XY6: Shift right 1. Set VF to 1 if the least significant bit is 1
     //         otherwise set to 0.
     // AMBIGUOUS - Alternately VX <- VY before shift.
-    case 0x0006:
+    case 0x0006: {
       // If the least significant bit is 1.
-      sys->V[X] = sys->V[Y];
+      // sys->V[X] = sys->V[Y];
       sys->V[0xF] = sys->V[X] & 1;
+      int8_t VX = sys->V[X];
       sys->V[X] = sys->V[X] >> 1;
       sys->PC += 2;
+      simpleLog(INFO,
+                "%#06X - Shift VX one bit right. VX = VX(%#04X) >> 1 = %#04X. "
+                "VF = %i.\n",
+                opcode, VX, sys->V[X], sys->V[0xF]);
       break;
+    }
 
     // 0x8XY7: Subtract VX from VY and store in VX.
-    case 0x0007:
+    case 0x0007: {
+      int8_t VX = sys->V[X];
+      int8_t VY = sys->V[Y];
       // If VY>VX then set VF=1.
       if (sys->V[Y] > sys->V[X]) {
         sys->V[0xF] = 1;
@@ -249,11 +318,18 @@ void cycleSystem(Chip8 *sys) {
 
       sys->V[X] = sys->V[Y] - sys->V[X];
       sys->PC += 2;
+      simpleLog(INFO,
+                "%#06X - Subtract VY from VX. VX = VX(%#04X) - VY(%#04X) = "
+                "%#04X. VF = %i\n",
+                opcode, VX, VY, sys->V[X], sys->V[0xF]);
       break;
+    }
+
     // 0x8XYE: Shift left 1. Set VF to 1 if the most significant bit is 1
     //         otherwise set to 0.
     // AMBIGUOUS - Alternately VX <- VY before shift.
-    case 0x000E:
+    case 0x000E: {
+      int8_t VX = sys->V[X];
       // If the most significant bit is 1. Hence if VX & 10000000 != 0.
       if (sys->V[X] & 0x80) {
         sys->V[0xF] = 1;
@@ -265,7 +341,12 @@ void cycleSystem(Chip8 *sys) {
 
       sys->V[X] = sys->V[X] << 1;
       sys->PC += 2;
+      simpleLog(INFO,
+                "%#06X - Shift VX one bit right. VX = VX(%#04X) >> 1 = %#04X. "
+                "VF = %i.\n",
+                opcode, VX, sys->V[X], sys->V[0xF]);
       break;
+    }
 
     default:
       printf("Unknown opcode: %x.\n", opcode);
