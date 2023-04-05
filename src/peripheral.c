@@ -94,19 +94,20 @@ void printDisplay(Chip8 *sys) {
  * Parameters:
  *  Chip8* sys: the system state.
  */
-void printKeyboard(Chip8 *sys){
-  for(int y = 0; y < 4; y++){
-    for (int x = 0; x < 4; x++){
-      printf("%i ",sys->Keyboard[x+y*4]);
+void printKeyboard(Chip8 *sys) {
+  for (int y = 0; y < 4; y++) {
+    for (int x = 0; x < 4; x++) {
+      printf("%i ", sys->Keyboard[x + y * 4]);
     }
     printf("\n");
-  }}
+  }
+}
 
 SDL_Scancode keys[16] = {
-    SDL_SCANCODE_1, SDL_SCANCODE_2, SDL_SCANCODE_3, SDL_SCANCODE_4,
-    SDL_SCANCODE_Q, SDL_SCANCODE_W, SDL_SCANCODE_E, SDL_SCANCODE_R,
-    SDL_SCANCODE_A, SDL_SCANCODE_S, SDL_SCANCODE_D, SDL_SCANCODE_F,
-    SDL_SCANCODE_Z, SDL_SCANCODE_X, SDL_SCANCODE_C, SDL_SCANCODE_V};
+    SDL_SCANCODE_X, SDL_SCANCODE_1, SDL_SCANCODE_2, SDL_SCANCODE_3,
+    SDL_SCANCODE_Q, SDL_SCANCODE_W, SDL_SCANCODE_E, SDL_SCANCODE_A,
+    SDL_SCANCODE_S, SDL_SCANCODE_D, SDL_SCANCODE_Z, SDL_SCANCODE_C,
+    SDL_SCANCODE_4, SDL_SCANCODE_R, SDL_SCANCODE_F, SDL_SCANCODE_V};
 
 /**
  * Handle SDL events.
@@ -124,20 +125,19 @@ void handleEvents(Chip8 *sys) {
   // If an event has happened
   if (SDL_PollEvent(&event)) {
     // If user quits set sys->Quit and return.
-    if (SDL_QUIT == event.type){
+    if (SDL_QUIT == event.type) {
       sys->Quit = 1;
       return;
-
-      }
+    }
     // If escape key is pressed set sys->Quit and return.
     if (keyState[SDL_SCANCODE_ESCAPE]) {
       sys->Quit = 1;
       return;
     }
-    
+
     // For each key in the defined key map (see sys->Keyboard) set the state
     // stored in sys to match the current state.
-    for (int keyCode =0; keyCode < 16; keyCode ++){
+    for (int keyCode = 0; keyCode < 16; keyCode++) {
       sys->Keyboard[keyCode] = keyState[keys[keyCode]];
     }
   }
