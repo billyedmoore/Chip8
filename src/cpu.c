@@ -429,17 +429,8 @@ void cycleSystem(Chip8 *sys) {
           sys->Display[pxIndex] ^= 1;
         }
 
-        // If reach right edge of screen stop.
-        if (x == 63) {
-          break;
-        }
         x++;
       }
-      // If reach bottom of the screen.
-      if (y == 31) {
-        break;
-      }
-      // Reset the x to the start of the row.
       x -= 8;
       y++;
     }
