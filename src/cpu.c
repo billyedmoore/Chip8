@@ -420,14 +420,13 @@ void cycleSystem(Chip8 *sys) {
         // Get the index of the relevant pixel
         int pxIndex = x + (y * 64);
 
-        // If 1 in sprite and on display then set VF.
-        if (px & sys->Display[pxIndex]) {
-          sys->Display[pxIndex] = 0;
-          sys->V[0xF] = 1;
-        }
-        // If 1 in sprite and not on display then set display px to 1.
-        if (px & !sys->Display[pxIndex]) {
-          sys->Display[pxIndex] = 1;
+        if (px) {
+          // If 1 in sprite and on display then set VF.
+          if (sys->Display[pxIndex]) {
+            sys->V[0xF] = 1;
+          }
+          // If 1 in sprite and not on display then set display px to 1.
+          sys->Display[pxIndex] ^= 1;
         }
 
         // If reach right edge of screen stop.
