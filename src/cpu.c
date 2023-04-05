@@ -422,10 +422,11 @@ void cycleSystem(Chip8 *sys) {
 
         // If 1 in sprite and on display then set VF.
         if (px & sys->Display[pxIndex]) {
+          sys->Display[pxIndex] = 0;
           sys->V[0xF] = 1;
         }
         // If 1 in sprite and not on display then set display px to 1.
-        else if (px & !sys->Display[pxIndex]) {
+        if (px & !sys->Display[pxIndex]) {
           sys->Display[pxIndex] = 1;
         }
 
