@@ -255,9 +255,11 @@ void cycleSystem(Chip8 *sys) {
 
     // 0x8XY4: Add VX to VY and store in VX.
     case 0x0004: {
-      int8_t VX = sys->V[X];
-      int8_t VY = sys->V[Y];
-      sys->V[X] = sys->V[X] + sys->V[Y];
+      uint8_t VX = sys->V[X];
+      uint8_t VY = sys->V[Y];
+      int result = sys->V[X] + sys->V[Y];
+      sys->V[0xF] = (result > 0xFF);
+      sys->V[X] = result;
       sys->PC += 2;
       simpleLog(
           INFO,
@@ -268,18 +270,11 @@ void cycleSystem(Chip8 *sys) {
 
     // 0x8XY5: Subtract VY from VX and store in VX.
     case 0x0005: {
-      int8_t VX = sys->V[X];
-      int8_t VY = sys->V[Y];
-      // if VX>VY then set VF=1
-      if (sys->V[X] > sys->V[Y]) {
-        sys->V[0xF] = 1;
-      }
-      // else then set VF=0
-      else {
-        sys->V[0xF] = 0;
-      }
+      uint8_t VX = sys->V[X];
+      uint8_t VY = sys->V[Y];
 
       sys->V[X] = sys->V[X] - sys->V[Y];
+      sys->V[0xF] = sys->V[X] > sys->V[Y];
       sys->PC += 2;
       simpleLog(
           INFO,
@@ -295,9 +290,9 @@ void cycleSystem(Chip8 *sys) {
     // AMBIGUOUS - Alternately VX <- VY before shift.
     case 0x0006: {
       // If the least significant bit is 1.
-      // sys->V[X] = sys->V[Y];
-      sys->V[0xF] = sys->V[X] & 1;
-      int8_t VX = sys->V[X];
+      sys->V[X] = sys->V[Y];
+      uint8_t VX = sys->V[X];
+      sys->V[0xF] = sys->V[X] & 0x1;
       sys->V[X] = sys->V[X] >> 1;
       sys->PC += 2;
       simpleLog(
@@ -310,18 +305,10 @@ void cycleSystem(Chip8 *sys) {
 
     // 0x8XY7: Subtract VX from VY and store in VX.
     case 0x0007: {
-      int8_t VX = sys->V[X];
-      int8_t VY = sys->V[Y];
-      // If VY>VX then set VF=1.
-      if (sys->V[Y] > sys->V[X]) {
-        sys->V[0xF] = 1;
-      }
-      // Else set VF=0.
-      else {
-        sys->V[0xF] = 0;
-      }
-
+      uint8_t VX = sys->V[X];
+      uint8_t VY = sys->V[Y];
       sys->V[X] = sys->V[Y] - sys->V[X];
+      sys->V[0xF] = (sys->V[Y] > sys->V[X]);
       sys->PC += 2;
       simpleLog(
           INFO,
@@ -335,16 +322,9 @@ void cycleSystem(Chip8 *sys) {
     //         otherwise set to 0.
     // AMBIGUOUS - Alternately VX <- VY before shift.
     case 0x000E: {
-      int8_t VX = sys->V[X];
+      uint8_t VX = sys->V[X];
       // If the most significant bit is 1. Hence if VX & 10000000 != 0.
-      if (sys->V[X] & 0x80) {
-        sys->V[0xF] = 1;
-      }
-      // Else set VF = 0.
-      else {
-        sys->V[0xF] = 0;
-      }
-
+      sys->V[0xF] = (sys->V[X] >> 7) & 1;
       sys->V[X] = sys->V[X] << 1;
       sys->PC += 2;
       simpleLog(

@@ -17,7 +17,7 @@
 // The ratio of cycle hrz to the hrz timers should be run at (60hz).
 #define TIMERS_RATIO 5
 // If debug is set run one instruction at a time.
-#define DEBUG 1
+#define DEBUG 0
 
 int main(int argc, char **argv) {
 
