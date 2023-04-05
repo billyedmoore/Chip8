@@ -68,6 +68,7 @@ int main(int argc, char **argv) {
 
     // If debug is set wait for char to run next instrucion.
     if (DEBUG) {
+      printf(": ");
       getchar();
     }
   }
