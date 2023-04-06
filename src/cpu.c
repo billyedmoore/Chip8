@@ -290,10 +290,11 @@ void cycleSystem(Chip8 *sys) {
     // AMBIGUOUS - Alternately VX <- VY before shift.
     case 0x0006: {
       // If the least significant bit is 1.
-      sys->V[X] = sys->V[Y];
+      // sys->V[X] = sys->V[Y];
       uint8_t VX = sys->V[X];
-      sys->V[0xF] = sys->V[X] & 0x1;
+      uint8_t VF = sys->V[X] & 0x1;
       sys->V[X] = sys->V[X] >> 1;
+      sys->V[0xF] = VF;
       sys->PC += 2;
       simpleLog(
           INFO,
@@ -324,8 +325,9 @@ void cycleSystem(Chip8 *sys) {
     case 0x000E: {
       uint8_t VX = sys->V[X];
       // If the most significant bit is 1. Hence if VX & 10000000 != 0.
-      sys->V[0xF] = (sys->V[X] >> 7) & 1;
+      uint8_t VF = (sys->V[X] >> 7) & 1;
       sys->V[X] = sys->V[X] << 1;
+      sys->V[0xF] = VF;
       sys->PC += 2;
       simpleLog(
           INFO,
@@ -448,9 +450,10 @@ void cycleSystem(Chip8 *sys) {
       break;
 
     default:
-      printf("Unknown opcode: %x.\n", opcode);
+      printf("Unknown opcode: %X.\n", opcode);
       break;
     }
+    break;
 
   case 0xF000:
     switch (opcode & 0x00FF) {
@@ -563,12 +566,12 @@ void cycleSystem(Chip8 *sys) {
       break;
     }
     default:
-      printf("Unknown opcode: %x.\n", opcode);
+      simpleLog(WARN, "Unknown opcode: %#06X.\n", opcode);
       break;
     }
     break;
   default:
-    printf("Unknown opcode: %x.\n", opcode);
+    simpleLog(WARN, "Unknown opcode: %#06X.\n", opcode);
     break;
   }
 }
