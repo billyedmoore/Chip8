@@ -385,17 +385,18 @@ void cycleSystem(Chip8 *sys) {
 
   // 0xDXYN: Draw to display.
   case 0xD000: {
-    int8_t x = sys->V[X] & 63;
-    int8_t y = sys->V[Y] & 31;
+    int8_t x = sys->V[X] % 64;
+    int8_t y = sys->V[Y] % 32;
     int8_t N = (opcode & 0x000F);
 
     sys->V[0xF] = 0;
 
     // For y in height
-    for (int yCount = 0; yCount < N; yCount++) {
-      int8_t spriteBlock = sys->Memory[(sys->I) + yCount];
+    for (int lineCount = 0; lineCount < N; lineCount++) {
+      int8_t spriteBlock = sys->Memory[(sys->I) + lineCount];
 
       // From most to least significant bit.
+      int x_moved = 0;
       for (int xCount = 7; xCount >= 0; xCount--) {
         // Get the relevant bit.
         int8_t px = (spriteBlock >> xCount) & 1;
@@ -412,9 +413,17 @@ void cycleSystem(Chip8 *sys) {
         }
 
         x++;
+
+        if (x > 63) {
+          break;
+        }
       }
-      x -= 8;
+      x -= x_moved;
       y++;
+
+      if (y > 31) {
+        break;
+      }
     }
     sys->PC += 2;
     simpleLog(INFO, "%#06X - Drawn to display.\n", opcode);
