@@ -222,6 +222,7 @@ void cycleSystem(Chip8 *sys) {
       int8_t VX = sys->V[X];
       int8_t VY = sys->V[Y];
       sys->V[X] = sys->V[X] | sys->V[Y];
+      sys->V[0xF] = 0;
       sys->PC += 2;
       simpleLog(INFO,
                 "%#06X - Binary OR. V%X = V%X(%#04X) | V%X(%#04X) = %#04X\n",
@@ -234,6 +235,7 @@ void cycleSystem(Chip8 *sys) {
       int8_t VX = sys->V[X];
       int8_t VY = sys->V[Y];
       sys->V[X] = sys->V[X] & sys->V[Y];
+      sys->V[0xF] = 0;
       sys->PC += 2;
       simpleLog(INFO,
                 "%#06X - Binary AND. V%X = V%X(%#04X) & V%X(%#04X) = %#04X\n",
@@ -246,6 +248,7 @@ void cycleSystem(Chip8 *sys) {
       int8_t VX = sys->V[X];
       int8_t VY = sys->V[Y];
       sys->V[X] = sys->V[X] ^ sys->V[Y];
+      sys->V[0xF] = 0;
       sys->PC += 2;
       simpleLog(INFO,
                 "%#06X - Binary XOR. V%X = V%X(%#04X) ^ V%X(%#04X) = %#04X\n",
@@ -290,7 +293,7 @@ void cycleSystem(Chip8 *sys) {
     // AMBIGUOUS - Alternately VX <- VY before shift.
     case 0x0006: {
       // If the least significant bit is 1.
-      // sys->V[X] = sys->V[Y];
+      sys->V[X] = sys->V[Y];
       uint8_t VX = sys->V[X];
       uint8_t VF = sys->V[X] & 0x1;
       sys->V[X] = sys->V[X] >> 1;
@@ -323,6 +326,7 @@ void cycleSystem(Chip8 *sys) {
     //         otherwise set to 0.
     // AMBIGUOUS - Alternately VX <- VY before shift.
     case 0x000E: {
+      sys->V[X] = sys->V[Y];
       uint8_t VX = sys->V[X];
       // If the most significant bit is 1. Hence if VX & 10000000 != 0.
       uint8_t VF = (sys->V[X] >> 7) & 1;
@@ -411,7 +415,7 @@ void cycleSystem(Chip8 *sys) {
           // If 1 in sprite and not on display then set display px to 1.
           sys->Display[pxIndex] ^= 1;
         }
-
+        x_moved++;
         x++;
 
         if (x > 63) {
@@ -555,6 +559,7 @@ void cycleSystem(Chip8 *sys) {
         sys->Memory[index] = sys->V[i];
         index++;
       }
+      sys->I += X;
       sys->PC += 2;
       simpleLog(INFO,
                 "%#06X - Read from V0 -> V%X into memory starting at %#06X\n",
@@ -569,6 +574,7 @@ void cycleSystem(Chip8 *sys) {
         sys->V[i] = sys->Memory[index];
         index++;
       }
+      sys->I += X;
       sys->PC += 2;
       simpleLog(INFO, "%#06X - Read memory into V0 -> V%X starting at %#06X\n",
                 opcode, X, sys->I);
@@ -600,6 +606,7 @@ void loadRom(char *filePath, Chip8 *sys) {
   // If failed to open.
   if (fp == NULL) {
     sys->FileNotFound = 1;
+    return;
   }
 
   // Read the rom into memory starting at 0x200
