@@ -7,5 +7,6 @@ void displayInit(void);
 void displayQuit(void);
 void draw(Chip8 *sys);
 void printDisplay(Chip8 *sys);
-int handleEvents(void);
+void handleEvents(Chip8 *sys);
+void printKeyboard(Chip8 *sys);
 #endif

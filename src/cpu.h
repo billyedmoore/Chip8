@@ -26,9 +26,9 @@ typedef struct Chip8 {
 
   /**
    * The stack: used to to call subroutines/functions and return from them. Has
-   * a max depth of 16.
+   * a max depth of 64.
    */
-  uint16_t Stack[16];
+  uint16_t Stack[64];
 
   /**
    * The stack pointer: a pseudo register, points to the top of the stack.
@@ -60,10 +60,23 @@ typedef struct Chip8 {
    */
   uint8_t SoundTimer;
 
+  /**
+   * Keyboard: A map of the state of keys, 0 representing not pressed and 1
+   *           representing pressed
+   *
+   * The order of keys (left to right top to bottom): 1,2,3,4,Q,W,E,R,A,S,D,F,
+   *                                                  Z,X,C,V
+   */
+  uint8_t Keyboard[16];
+
+  int Quit;
+  int FileNotFound;
+
 } Chip8;
 
 Chip8 *systemInit();
 void cycleSystem(Chip8 *sys);
-int loadRom(char* filePath, Chip8 *sys);
+void decrementTimers(Chip8 *sys);
+void loadRom(char *filePath, Chip8 *sys);
 
 #endif
