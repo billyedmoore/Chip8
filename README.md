@@ -7,8 +7,8 @@ But is know to show weird behaviour in some cases.
 
 ## Images
 
-![Tetris](https://raw.githubusercontent.com/billyedmoore/Chip8/main/img/tests.png "Tetris running.")
-![Tests](https://github.com/billyedmoore/Chip8/tree/main/img/tests.png "Tests.")
+![Tetris](https://raw.githubusercontent.com/billyedmoore/Chip8/main/img/tetris.png "Tetris running.")
+![Tests](https://raw.githubusercontent.com/billyedmoore/Chip8/main/img/tests.png "Tests.")
 
 ## About
 
