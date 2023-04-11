@@ -1,4 +1,5 @@
 #include "logging.h"
+#include "cpu.h"
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -32,4 +33,9 @@ void simpleLog(int logLevel, char *fmt, ...) {
   printf("[%s] : ", getLogLevelName(logLevel));
   vprintf(fmt, argp);
   va_end(argp);
+}
+
+void logRegisters(Chip8 sys) {
+  for (int i = 0; i <= 0xF; i++) {
+  }
 }
