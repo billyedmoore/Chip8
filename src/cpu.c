@@ -93,7 +93,6 @@ void cycleSystem(Chip8 *sys) {
   uint16_t X = (opcode & 0x0F00) >> 8;
   // Get the Y from some instructions e.g 0x5XY0
   uint16_t Y = (opcode & 0x00F0) >> 4;
-
   switch (opcode & 0xF000) {
   case 0x0000:
     switch (opcode) {
@@ -430,7 +429,8 @@ void cycleSystem(Chip8 *sys) {
       }
     }
     sys->PC += 2;
-    simpleLog(INFO, "%#06X - Drawn to display.\n", opcode);
+    simpleLog(INFO, "%#06X - Drawn to display.(VX=%#04X, VY=%#04X)\n", opcode,
+              sys->V[X], sys->V[Y]);
     break;
   }
 
@@ -530,7 +530,7 @@ void cycleSystem(Chip8 *sys) {
     // 0xFX29: Set I to the location of sprite in memory;
     case 0x0029:
       // Set I to the value of the font for the specified char.
-      sys->I = 0x050 + sys->V[X];
+      sys->I = 0x050 + (sys->V[X] * 5);
       sys->PC += 2;
       simpleLog(INFO, "%#06X - Set I = location of char %i = %#04X\n", opcode,
                 sys->V[X], sys->I);
@@ -559,7 +559,7 @@ void cycleSystem(Chip8 *sys) {
         sys->Memory[index] = sys->V[i];
         index++;
       }
-      sys->I += X;
+      sys->I++;
       sys->PC += 2;
       simpleLog(INFO,
                 "%#06X - Read from V0 -> V%X into memory starting at %#06X\n",
@@ -574,7 +574,7 @@ void cycleSystem(Chip8 *sys) {
         sys->V[i] = sys->Memory[index];
         index++;
       }
-      sys->I += X;
+      sys->I++;
       sys->PC += 2;
       simpleLog(INFO, "%#06X - Read memory into V0 -> V%X starting at %#06X\n",
                 opcode, X, sys->I);
